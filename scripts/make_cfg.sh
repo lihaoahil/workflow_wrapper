@@ -162,7 +162,7 @@ do
 		echo "WORKFLOWNAME="$WORKFLOWNAME                 									>>$WORKFLOWNAME.cfg
 		echo "DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR 									>>$WORKFLOWNAME.cfg
 
-
+		echo "cfg at:" $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 	done # Done with this reaction mechanism
 	echo
 
@@ -175,16 +175,35 @@ done
 ######################################################
 
 # Set the MCWRAPPER env
+echo "Set $MCWRAPPER_CENTRAL as: "$MCWRAPPER_CENTRAL
 setenv MCWRAPPER_CENTRAL $MCWRAPPER_CENTRAL
 echo $MCWRAPPER_CENTRAL
 echo 
-
+echo
 echo " Start workflow submission:"
+echo
+echo " --------------------------------------------------------------------------------------- "
+echo "DISK="$DISK                                 						
+echo "RAM="$RAM                                   						
+echo "TIMELIMIT="$TIMELIMIT                       						
+echo "OS="$OS                                     						
+echo "NCORES="$NCORES                             						
+echo "BATCH_SYSTEM="$BATCH_SYSTEM                 						
+echo "PROJECT="$PROJECT                           						
+echo "TRACK="$TRACK                               						
+echo "GENERATOR="$GENERATOR                       						
+echo "GEANT_VERSION="$GEANT_VERSION               						
+echo "CUSTOM_PLUGINS=file:"$CUSTOM_PLUGINS             					
+echo " --------------------------------------------------------------------------------------- "
 echo
 for idx in `seq 0 3`;
 do
 	echo " --------------------------------------------------------------------------------------- "
-	echo "Run Period="${PERIOD_LIST[idx]}", ENV="${ENV_LIST[idx]}", ANA="${ANAENV_LIST[idx]}
+	echo "Run Period: "${PERIOD_LIST[idx]}
+	echo "BKG=Random:"${BKG_LIST[idx]}
+	echo "ENV="${ENV_LIST[idx]}
+	echo "ANA="${ANAENV_LIST[idx]}
+	echo "RCDB_QUERY="${RCDBQUERY_LIST[idx]}
 	echo " --------------------------------------------------------------------------------------- "
 
 	RUN_RANGE=${RUN_LIST[idx]}
@@ -193,7 +212,8 @@ do
 	do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
-		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME 
+		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
+		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME", DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR
 
 
 		# Workflow submission
@@ -206,7 +226,6 @@ do
 		else                                 # debug mode
 			echo "In farm mode will run:     " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
 			echo "In test mode will run:     " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
-			echo "cfg at:                    " $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 		fi
 		echo
 
