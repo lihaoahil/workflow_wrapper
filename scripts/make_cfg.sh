@@ -24,8 +24,11 @@ MCWRAPPER_CENTRAL=/w/halld-scifs17exp/haoli/builds/test/gluex_MCwrapper
 
 # Simulation related
 REACTION=ppbar
-RUN="30730"  # Either single run number: 30730, or run range like 30796-30901 
+RUN_LIST=('30274-31057' '40856-42559' '50685-51768' '51384-51457')  # Either single run number: 30730, or run range like 30796-30901 
 TRIGGER=1000000
+# TEST PURPOSED
+TESTRUN_LIST=('30730' '40856' '50685' '51384')
+TESTTRIGGER=500
 
 # Farm related (do not change unless you know what you are doing)
 DISK=5GB           # Max Disk usage
@@ -53,7 +56,7 @@ MECH_LIST=('M6' 'M5a' 'M5b')
 BKG_LIST=('recon-2017_01-ver03' 'recon-2018_01-ver02' 'recon-2018_08-ver02' 'recon-2018_08-ver02')
 ENV_LIST=('recon-2017_01-ver03_22.xml' 'recon-2018_01-ver02_14.xml' 'recon-2018_08-ver02_13.xml' 'recon-2018_08-ver02_13.xml')
 ANAENV_LIST=('analysis-2017_01-ver36.xml' 'analysis-2018_01-ver02.xml' 'analysis-2018_08-ver02.xml' 'analysis-2018_08-ver05.xml')
-RCDBQUERY_LIST=('' '' '' '')
+RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @status_approved' '@is_2018production and @status_approved and beam_current > 49' '@is_2018production and @status_approved and beam_current < 49') # Got from https://halldweb.jlab.org/wiki-private/index.php/GlueX_Phase-I_Dataset_Summary
 
 
 ######################################################
@@ -82,6 +85,9 @@ do
 	echo " --------------------------------------------------------------------------------------- "
 	echo "Run Period: "${PERIOD_LIST[idx]}", ENV: "${ENV_LIST[idx]}", ANA: "${ANAENV_LIST[idx]}
 	echo " --------------------------------------------------------------------------------------- "
+
+	RUN_RANGE=${RUN_LIST[idx]}
+	TESTRUN=${TESTRUN_LIST[idx]}
 	for mech_idx in `seq 0 2`;
 	do
 		# Build path for the output
@@ -101,8 +107,6 @@ do
 
 		# Determine track and trigger for different mode
 		if [ "$MODE" != "ifarm" ]; then
-			TRIGGER=500  # fast test on ifarm
-			RUN=30730
 			TRACK=debug  # for highest priority
 		fi
 
@@ -114,40 +118,44 @@ do
 		rm -f $WORKFLOWNAME.cfg
 		
 		echo "#This config file was used to submit workflow: " $WORKFLOWNAME                >>$WORKFLOWNAME.cfg
-		echo ""                                           >>$WORKFLOWNAME.cfg
-		echo "DISK="$DISK                                 >>$WORKFLOWNAME.cfg
-		echo "RAM="$RAM                                   >>$WORKFLOWNAME.cfg
-		echo "TIMELIMIT="$TIMELIMIT                       >>$WORKFLOWNAME.cfg
-		echo "OS="$OS                                     >>$WORKFLOWNAME.cfg
-		echo "NCORES="$NCORES                             >>$WORKFLOWNAME.cfg
-		echo "BATCH_SYSTEM="$BATCH_SYSTEM                 >>$WORKFLOWNAME.cfg
-		echo "PROJECT="$PROJECT                           >>$WORKFLOWNAME.cfg
-		echo "TRACK="$TRACK                               >>$WORKFLOWNAME.cfg
-		echo ""                                           >>$WORKFLOWNAME.cfg
-		echo "GENERATOR="$GENERATOR                       >>$WORKFLOWNAME.cfg
-		echo "GEANT_VERSION="$GEANT_VERSION               >>$WORKFLOWNAME.cfg
-		echo "CUSTOM_PLUGINS="$CUSTOM_PLUGINS             >>$WORKFLOWNAME.cfg
-		echo ""                                           >>$WORKFLOWNAME.cfg
+		echo ""                                           									>>$WORKFLOWNAME.cfg
+		echo "DISK="$DISK                                 									>>$WORKFLOWNAME.cfg
+		echo "RAM="$RAM                                   									>>$WORKFLOWNAME.cfg
+		echo "TIMELIMIT="$TIMELIMIT                       									>>$WORKFLOWNAME.cfg
+		echo "OS="$OS                                     									>>$WORKFLOWNAME.cfg
+		echo "NCORES="$NCORES                             									>>$WORKFLOWNAME.cfg
+		echo "BATCH_SYSTEM="$BATCH_SYSTEM                 									>>$WORKFLOWNAME.cfg
+		echo "PROJECT="$PROJECT                           									>>$WORKFLOWNAME.cfg
+		echo "TRACK="$TRACK                               									>>$WORKFLOWNAME.cfg
+		echo ""                                           									>>$WORKFLOWNAME.cfg
+		echo "GENERATOR="$GENERATOR                       									>>$WORKFLOWNAME.cfg
+		echo "GEANT_VERSION="$GEANT_VERSION               									>>$WORKFLOWNAME.cfg
+		echo "CUSTOM_PLUGINS="$CUSTOM_PLUGINS             									>>$WORKFLOWNAME.cfg
+		echo ""                                           									>>$WORKFLOWNAME.cfg
 		echo "GENERATOR_CONFIG="$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg         >>$WORKFLOWNAME.cfg
-		echo "BKG=Random:"${BKG_LIST[idx]}                >>$WORKFLOWNAME.cfg
-		echo "ENVIRONMENT_FILE="$ENVIRONMENT_FILE         >>$WORKFLOWNAME.cfg
-		echo "ANA_ENVIRONMENT_FILE="$ANA_ENVIRONMENT_FILE >>$WORKFLOWNAME.cfg
-		echo "GEN_MIN_ENERGY="$GEN_MIN_ENERGY             >>$WORKFLOWNAME.cfg
-		echo "GEN_MAX_ENERGY="$GEN_MAX_ENERGY             >>$WORKFLOWNAME.cfg
-		echo ""                                           >>$WORKFLOWNAME.cfg
-		echo "WORKFLOWNAME="$WORKFLOWNAME                 >>$WORKFLOWNAME.cfg
-		echo "DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR >>$WORKFLOWNAME.cfg
+		echo "BKG=Random:"${BKG_LIST[idx]}                									>>$WORKFLOWNAME.cfg
+		echo "ENVIRONMENT_FILE="$ENVIRONMENT_FILE         									>>$WORKFLOWNAME.cfg
+		echo "ANA_ENVIRONMENT_FILE="$ANA_ENVIRONMENT_FILE 									>>$WORKFLOWNAME.cfg
+		echo "GEN_MIN_ENERGY="$GEN_MIN_ENERGY             									>>$WORKFLOWNAME.cfg
+		echo "GEN_MAX_ENERGY="$GEN_MAX_ENERGY             									>>$WORKFLOWNAME.cfg
+		echo "RCDB_QUERY="${RCDBQUERY_LIST[idx]}                							>>$WORKFLOWNAME.cfg
+		echo ""                                           									>>$WORKFLOWNAME.cfg
+		echo "WORKFLOWNAME="$WORKFLOWNAME                 									>>$WORKFLOWNAME.cfg
+		echo "DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR 									>>$WORKFLOWNAME.cfg
 
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then  # test case
-			gluex_MC.py $WORKFLOWNAME.cfg $RUN $TRIGGER batch=0
+			echo "FARM MODE: " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
+			gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
 		elif [ "$MODE" == "test" ]; then
-			echo "TEST MODE: " gluex_MC.py $WORKFLOWNAME.cfg $RUN $TRIGGER batch=0
+			echo "TEST MODE: " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
 			gluex_MC.py $WORKFLOWNAME.cfg $RUN $TRIGGER batch=0
 		else
-			echo "In test mode will run: " gluex_MC.py $WORKFLOWNAME.cfg $RUN $TRIGGER batch=0
+			echo "In farm mode will run: " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
+			echo "In test mode will run: " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
 			echo "cfg at: " $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 		fi
+		echo
 
 	done # Done with this reaction mechanism
 	echo
