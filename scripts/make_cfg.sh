@@ -19,14 +19,15 @@ echo
 #    CONFIGURATIONS      #
 ##########################
 
-# MCWRAPPER path
+# WRAPPER path
+WORKFLOWWRAPPER_PATH=/home/haoli/test/workflow_wrapper
 MCWRAPPER_CENTRAL=/w/halld-scifs17exp/haoli/builds/test/gluex_MCwrapper
 
 # Simulation related
 REACTION=ppbar
 RUN_LIST=('30274-31057' '40856-42559' '50685-51768' '51384-51457')  # Either single run number: 30730, or run range like 30796-30901 
 TRIGGER=1000000
-# TEST PURPOSED
+# test
 TESTRUN_LIST=('30730' '40856' '50685' '51384')
 TESTTRIGGER=500
 
@@ -41,10 +42,8 @@ PROJECT=gluex
 TRACK=simulation   # See here (https://scicomp.jlab.org/docs/batch_job_tracks)
 
 # Softwares
-MCWRAPPER_CENTRAL=/w/halld-scifs17exp/haoli/builds/test/gluex_MCwrapper
 GENERATOR=mc_gen   # Current event generator (https://github.com/JeffersonLab/halld_sim/tree/master/src/programs/Simulation/MC_GEN)
 GEANT_VERSION=4   
-CUSTOM_PLUGINS=file:/u/home/haoli/test/MCWrapper_DEV/jana_ppbar.config
 
 # Path
 #OUTPUT_PATH=/w/halld-scifs17exp/haoli/workflow_output  # See here for work (cache, volatile) usages: https://scicomp.jlab.org/scicomp/index.html#/work
@@ -59,13 +58,11 @@ ANAENV_LIST=('analysis-2017_01-ver36.xml' 'analysis-2018_01-ver02.xml' 'analysis
 RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @status_approved' '@is_2018production and @status_approved and beam_current > 49' '@is_2018production and @status_approved and beam_current < 49') # Got from https://halldweb.jlab.org/wiki-private/index.php/GlueX_Phase-I_Dataset_Summary
 
 
-######################################################
-#      SETUP & SUBMISSION    (Don't need edit)       #
-######################################################
 
-# Set the MCWRAPPER env
-setenv MCWRAPPER_CENTRAL $MCWRAPPER_CENTRAL
-echo $MCWRAPPER_CENTRAL
+######################################################
+#      SETUP & CONFIGURATION    (Don't need edit)    #
+######################################################
+echo
 # take input
 MODE=$1
 echo     "##############"
@@ -79,12 +76,29 @@ fi
 echo "##############"
 echo
 
-# Loops
+# JANA configs
+CUSTOM_PLUGINS=`printf "%s/scripts/reactions/jana_%s.config" "$WORKFLOWWRAPPER_PATH" "$REACTION" `
+# Check if exists
+if [ ! -f "$CUSTOM_PLUGINS" ]; then
+	echo "Cannot find" $CUSTOM_PLUGINS"!"
+	#exit
+fi
+
+# Loops to set up
 for idx in `seq 0 3`;
 do
-	echo " --------------------------------------------------------------------------------------- "
-	echo "Run Period: "${PERIOD_LIST[idx]}", ENV: "${ENV_LIST[idx]}", ANA: "${ANAENV_LIST[idx]}
-	echo " --------------------------------------------------------------------------------------- "
+	ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ENV_LIST[idx]}" `
+	ANA_ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ANAENV_LIST[idx]}" `
+	# Check if key files exist
+	if [ ! -f "$ENVIRONMENT_FILE" ]; then
+		echo "Cannot find" $ENVIRONMENT_FILE"!"
+		#exit
+	fi
+
+	if [ ! -f "$ANA_ENVIRONMENT_FILE" ]; then
+		echo "Cannot find" $ANA_ENVIRONMENT_FILE"!"
+		#exit
+	fi
 
 	RUN_RANGE=${RUN_LIST[idx]}
 	TESTRUN=${TESTRUN_LIST[idx]}
@@ -93,8 +107,15 @@ do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
-		ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ENV_LIST[idx]}" `
-		ANA_ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ANAENV_LIST[idx]}" `
+		
+		# Check if def exists
+		GENERATOR_CONFIG=`printf "%s/scripts/def/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
+		if [ ! -f "$GENERATOR_CONFIG" ]; then
+			echo "Cannot find" $GENERATOR_CONFIG"!"
+			#exit
+		fi
+
+
 
 		# Determine the erergy according to run periods
 		if [ "${PERIOD_LIST[idx]}" != "fall18lowEv2" ]; then
@@ -111,8 +132,6 @@ do
 		fi
 
 		# Write configurations into .cfg files
-		echo "Mech: "${MECH_LIST[mech_idx]}", workflow name: " $WORKFLOWNAME 
-
 		mkdir -p $DATA_OUTPUT_BASE_DIR/mcwrapper_configs
 		cd $DATA_OUTPUT_BASE_DIR/mcwrapper_configs
 		rm -f $WORKFLOWNAME.cfg
@@ -130,9 +149,9 @@ do
 		echo ""                                           									>>$WORKFLOWNAME.cfg
 		echo "GENERATOR="$GENERATOR                       									>>$WORKFLOWNAME.cfg
 		echo "GEANT_VERSION="$GEANT_VERSION               									>>$WORKFLOWNAME.cfg
-		echo "CUSTOM_PLUGINS="$CUSTOM_PLUGINS             									>>$WORKFLOWNAME.cfg
+		echo "CUSTOM_PLUGINS=file:"$CUSTOM_PLUGINS             								>>$WORKFLOWNAME.cfg
 		echo ""                                           									>>$WORKFLOWNAME.cfg
-		echo "GENERATOR_CONFIG="$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg         >>$WORKFLOWNAME.cfg
+		echo "GENERATOR_CONFIG="$GENERATOR_CONFIG                                           >>$WORKFLOWNAME.cfg
 		echo "BKG=Random:"${BKG_LIST[idx]}                									>>$WORKFLOWNAME.cfg
 		echo "ENVIRONMENT_FILE="$ENVIRONMENT_FILE         									>>$WORKFLOWNAME.cfg
 		echo "ANA_ENVIRONMENT_FILE="$ANA_ENVIRONMENT_FILE 									>>$WORKFLOWNAME.cfg
@@ -143,17 +162,51 @@ do
 		echo "WORKFLOWNAME="$WORKFLOWNAME                 									>>$WORKFLOWNAME.cfg
 		echo "DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR 									>>$WORKFLOWNAME.cfg
 
+
+	done # Done with this reaction mechanism
+	echo
+
+done
+
+
+
+######################################################
+#      WORKFLOW SUBMISSION    (Don't need edit)      #
+######################################################
+
+# Set the MCWRAPPER env
+setenv MCWRAPPER_CENTRAL $MCWRAPPER_CENTRAL
+echo $MCWRAPPER_CENTRAL
+echo 
+
+echo " Start workflow submission:"
+echo
+for idx in `seq 0 3`;
+do
+	echo " --------------------------------------------------------------------------------------- "
+	echo "Run Period="${PERIOD_LIST[idx]}", ENV="${ENV_LIST[idx]}", ANA="${ANAENV_LIST[idx]}
+	echo " --------------------------------------------------------------------------------------- "
+
+	RUN_RANGE=${RUN_LIST[idx]}
+	TESTRUN=${TESTRUN_LIST[idx]}
+	for mech_idx in `seq 0 2`;
+	do
+		# Build path for the output
+		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
+		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME 
+
+
 		# Workflow submission
-		if [ "$MODE" == "ifarm" ]; then  # test case
+		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
 			echo "FARM MODE: " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
 			gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
-		elif [ "$MODE" == "test" ]; then
+		elif [ "$MODE" == "test" ]; then     # test on farm
 			echo "TEST MODE: " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
 			gluex_MC.py $WORKFLOWNAME.cfg $RUN $TRIGGER batch=0
-		else
-			echo "In farm mode will run: " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
-			echo "In test mode will run: " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
-			echo "cfg at: " $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
+		else                                 # debug mode
+			echo "In farm mode will run:     " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
+			echo "In test mode will run:     " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
+			echo "cfg at:                    " $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 		fi
 		echo
 
@@ -161,6 +214,39 @@ do
 	echo
 
 done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
