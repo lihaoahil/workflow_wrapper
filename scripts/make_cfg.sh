@@ -1,7 +1,7 @@
 #!/bin/sh 
 echo
 TIME=$(date +"%Y_%m_%d_%I_%M_%p")
-echo "Time:" $TIME
+echo "Current time:" $TIME
 echo
  
 #####################################################
@@ -19,9 +19,12 @@ echo
 #    CONFIGURATIONS      #
 ##########################
 
-# WRAPPER path
-WORKFLOWWRAPPER_PATH=/u/home/haoli/workflow/workflow_wrapper
-MCWRAPPER_CENTRAL=/w/halld-scifs17exp/haoli/builds/test/gluex_MCwrapper
+# Path
+MCWRAPPER_CENTRAL=/w/halld-scifs17exp/haoli/builds/test/gluex_MCwrapper #README: https://www.overleaf.com/project/5bb7b3423bb4c259308b56c5
+WORKFLOWWRAPPER_JLAB=/u/home/haoli/workflow/workflow_wrapper #https://github.com/lihaoahil/workflow_wrapper
+WORKFLOWWRAPPER_CMU=/home/haoli/test/workflow_wrapper
+OUTPUT_JLAB=/w/halld-scifs17exp/home/haoli/simulation/workflow_out    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
+OUTPUT_CMU=/raid4/haoli/test/workflow_out
 
 # Simulation related
 REACTION=ppbar
@@ -44,10 +47,6 @@ TRACK=simulation   # See here (https://scicomp.jlab.org/docs/batch_job_tracks)
 # Softwares
 GENERATOR=mc_gen   # Current event generator (https://github.com/JeffersonLab/halld_sim/tree/master/src/programs/Simulation/MC_GEN)
 GEANT_VERSION=4   
-
-# Path
-#OUTPUT_PATH=`printf "/w/halld-scifs17exp/home/haoli/simulation/workflow_out/%s_%s" "$REACTION" "$TIME" `  # See here for work (cache, volatile) usages: https://scicomp.jlab.org/scicomp/index.html#/work
-OUTPUT_PATH=`printf "/raid4/haoli/test/workflow_out/%s_%s" "$REACTION" "$TIME" `
 
 # Version, mech related lists
 PERIOD_LIST=('S17v3' 'S18v2' 'F18v2' 'F18lowEv2')
@@ -76,12 +75,34 @@ fi
 echo "##############"
 echo
 
+# Output Path
+LOC_HOSTNAME=`hostname`
+echo "HOST: "$LOC_HOSTNAME
+if grep -q "cmu.edu" <<< "$LOC_HOSTNAME"; then
+	OUTPUT=$OUTPUT_CMU
+	WORKFLOWWRAPPER_PATH=$WORKFLOWWRAPPER_CMU
+elif grep -q "jlab.org" <<< "$LOC_HOSTNAME"; then
+	OUTPUT=$OUTPUT_JLAB
+	WORKFLOWWRAPPER_PATH=$WORKFLOWWRAPPER_JLAB
+else
+	echo " Hostname not matched! Exit now."
+	exit
+fi
+OUTPUT_PATH=`printf "%s/%s_%s" "$OUTPUT" "$REACTION" "$TIME" `
+echo "OUTPUT_PATH: "$OUTPUT_PATH
+echo
+echo
+echo " --------------------------------------------------------------------------------------- "
+echo
+echo " Start configuration:"
+echo
+echo " --------------------------------------------------------------------------------------- "
 # JANA configs
 CUSTOM_PLUGINS=`printf "%s/scripts/reactions/jana_%s.config" "$WORKFLOWWRAPPER_PATH" "$REACTION" `
 # Check if exists
 if [ ! -f "$CUSTOM_PLUGINS" ]; then
 	echo "Cannot find" $CUSTOM_PLUGINS"!"
-	#exit
+	exit
 fi
 
 # Loops to set up
@@ -92,12 +113,16 @@ do
 	# Check if key files exist
 	if [ ! -f "$ENVIRONMENT_FILE" ]; then
 		echo "Cannot find" $ENVIRONMENT_FILE"!"
-		#exit
+		if grep -q "jlab.org" <<< "$LOC_HOSTNAME"; then
+			exit
+		fi
 	fi
 
 	if [ ! -f "$ANA_ENVIRONMENT_FILE" ]; then
 		echo "Cannot find" $ANA_ENVIRONMENT_FILE"!"
-		#exit
+		if grep -q "jlab.org" <<< "$LOC_HOSTNAME"; then
+			exit
+		fi
 	fi
 
 	RUN_RANGE=${RUN_LIST[idx]}
@@ -112,7 +137,7 @@ do
 		GENERATOR_CONFIG=`printf "%s/scripts/def/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		if [ ! -f "$GENERATOR_CONFIG" ]; then
 			echo "Cannot find" $GENERATOR_CONFIG"!"
-			#exit
+			exit
 		fi
 
 
@@ -176,8 +201,7 @@ done
 
 # Set the MCWRAPPER env
 echo "Set $MCWRAPPER_CENTRAL as: "$MCWRAPPER_CENTRAL
-setenv MCWRAPPER_CENTRAL $MCWRAPPER_CENTRAL
-echo $MCWRAPPER_CENTRAL
+export MCWRAPPER_CENTRAL=$MCWRAPPER_CENTRAL
 echo 
 echo
 echo " Start workflow submission:"
@@ -194,8 +218,9 @@ echo "TRACK="$TRACK
 echo "GENERATOR="$GENERATOR                       						
 echo "GEANT_VERSION="$GEANT_VERSION               						
 echo "CUSTOM_PLUGINS=file:"$CUSTOM_PLUGINS             					
-echo " --------------------------------------------------------------------------------------- "
+echo 
 echo
+echo " Starting looping over run periods:"
 for idx in `seq 0 3`;
 do
 	echo " --------------------------------------------------------------------------------------- "
