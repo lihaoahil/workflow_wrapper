@@ -20,7 +20,7 @@ echo
 ##########################
 
 # WRAPPER path
-WORKFLOWWRAPPER_PATH=/home/haoli/test/workflow_wrapper
+WORKFLOWWRAPPER_PATH=/u/home/haoli/workflow/workflow_wrapper
 MCWRAPPER_CENTRAL=/w/halld-scifs17exp/haoli/builds/test/gluex_MCwrapper
 
 # Simulation related
@@ -46,7 +46,7 @@ GENERATOR=mc_gen   # Current event generator (https://github.com/JeffersonLab/ha
 GEANT_VERSION=4   
 
 # Path
-#OUTPUT_PATH=/w/halld-scifs17exp/haoli/workflow_output  # See here for work (cache, volatile) usages: https://scicomp.jlab.org/scicomp/index.html#/work
+#OUTPUT_PATH=`printf "/w/halld-scifs17exp/home/haoli/simulation/workflow_out/%s_%s" "$REACTION" "$TIME" `  # See here for work (cache, volatile) usages: https://scicomp.jlab.org/scicomp/index.html#/work
 OUTPUT_PATH=`printf "/raid4/haoli/test/workflow_out/%s_%s" "$REACTION" "$TIME" `
 
 # Version, mech related lists
@@ -213,19 +213,21 @@ do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
-		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME", DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR
+		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
+
+		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
 
 
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
-			echo "FARM MODE: " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
-			gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
+			echo "FARM MODE: " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
+			gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
 		elif [ "$MODE" == "test" ]; then     # test on farm
-			echo "TEST MODE: " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
-			gluex_MC.py $WORKFLOWNAME.cfg $RUN $TRIGGER batch=0
+			echo "TEST MODE: " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
+			gluex_MC.py $cfgPATH $RUN $TRIGGER batch=0
 		else                                 # debug mode
-			echo "In farm mode will run:     " gluex_MC.py $WORKFLOWNAME.cfg $RUN_RANGE $TRIGGER batch=2
-			echo "In test mode will run:     " gluex_MC.py $WORKFLOWNAME.cfg $TESTRUN $TESTTRIGGER batch=0
+			echo "In farm mode will run:     " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
+			echo "In test mode will run:     " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
 		fi
 		echo
 
