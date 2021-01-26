@@ -17,7 +17,6 @@
 ##########################
 
 # Path
-MCWRAPPER_CENTRAL=/w/halld-scifs17exp/haoli/builds/test/gluex_MCwrapper #README: https://www.overleaf.com/project/5bb7b3423bb4c259308b56c5
 WORKFLOWWRAPPER_JLAB=/u/home/haoli/workflow/workflow_wrapper #https://github.com/lihaoahil/workflow_wrapper
 WORKFLOWWRAPPER_CMU=/home/haoli/test/workflow_wrapper
 OUTPUT_JLAB=/w/halld-scifs17exp/home/haoli/simulation/workflow_out    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
@@ -92,9 +91,7 @@ echo "OUTPUT_PATH: "$OUTPUT_PATH
 echo
 echo
 echo " --------------------------------------------------------------------------------------- "
-echo
 echo " Start configuration:"
-echo
 echo " --------------------------------------------------------------------------------------- "
 # JANA configs
 CUSTOM_PLUGINS=`printf "%s/scripts/reactions/jana_%s.config" "$WORKFLOWWRAPPER_PATH" "$REACTION" `
@@ -200,13 +197,9 @@ done
 
 # Set the MCWRAPPER env
 
-echo
-echo " Start workflow submission:"
-echo
 echo " --------------------------------------------------------------------------------------- "
-echo "Set $MCWRAPPER_CENTRAL as: "$MCWRAPPER_CENTRAL
-tcshCOMMAND=`printf "setenv MCWRAPPER_CENTRAL %s" "${MCWRAPPER_CENTRAL}"`
-csh $tcshCOMMAND
+echo " Start workflow submission:"
+echo " --------------------------------------------------------------------------------------- "
 echo 
 echo "Set up the farm: "
 echo "DISK="$DISK                                 						
@@ -222,16 +215,17 @@ echo "GEANT_VERSION="$GEANT_VERSION
 echo "CUSTOM_PLUGINS=file:"$CUSTOM_PLUGINS             					
 echo 
 echo
-echo " Starting looping over run periods:"
+echo " Run periods:"
+echo
 for idx in `seq 0 3`;
 do
-	echo " --------------------------------------------------------------------------------------- "
-	echo "Run Period: "${PERIOD_LIST[idx]}
+	echo " --------------------------------------- "
+	echo ${PERIOD_LIST[idx]}
 	echo "BKG=Random:"${BKG_LIST[idx]}
 	echo "ENV="${ENV_LIST[idx]}
 	echo "ANA="${ANAENV_LIST[idx]}
 	echo "RCDB_QUERY="${RCDBQUERY_LIST[idx]}
-	echo " --------------------------------------------------------------------------------------- "
+	echo " --------------------------------------- "
 
 	RUN_RANGE=${RUN_LIST[idx]}
 	TESTRUN=${TESTRUN_LIST[idx]}
