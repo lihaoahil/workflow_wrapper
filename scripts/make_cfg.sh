@@ -224,7 +224,7 @@ do
 			gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
 		elif [ "$MODE" == "test" ]; then     # test on farm
 			echo "TEST MODE: " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
-			gluex_MC.py $cfgPATH $RUN $TRIGGER batch=0
+			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
 		else                                 # debug mode
 			echo "In farm mode will run:     " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
 			echo "In test mode will run:     " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
