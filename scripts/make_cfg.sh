@@ -1,8 +1,5 @@
 #!/bin/sh 
-echo
-TIME=$(date +"%Y_%m_%d_%I_%M_%p")
-echo "Current time:" $TIME
-echo
+
  
 #####################################################
 # AUTHOR: Hao Li                                    #
@@ -61,7 +58,7 @@ RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @s
 ######################################################
 #      SETUP & CONFIGURATION    (Don't need edit)    #
 ######################################################
-echo
+
 # take input
 MODE=$1
 echo     "##############"
@@ -74,7 +71,9 @@ else
 fi
 echo "##############"
 echo
-
+TIME=$(date +"%Y_%m_%d_%I_%M_%p")
+echo "Current time:" $TIME
+echo
 # Output Path
 LOC_HOSTNAME=`hostname`
 echo "HOST: "$LOC_HOSTNAME
@@ -200,13 +199,16 @@ done
 ######################################################
 
 # Set the MCWRAPPER env
-echo "Set $MCWRAPPER_CENTRAL as: "$MCWRAPPER_CENTRAL
-export MCWRAPPER_CENTRAL=$MCWRAPPER_CENTRAL
-echo 
+
 echo
 echo " Start workflow submission:"
 echo
 echo " --------------------------------------------------------------------------------------- "
+echo "Set $MCWRAPPER_CENTRAL as: "$MCWRAPPER_CENTRAL
+tcshCOMMAND=`printf "setenv MCWRAPPER_CENTRAL %s" "${MCWRAPPER_CENTRAL}"`
+csh $tcshCOMMAND
+echo 
+echo "Set up the farm: "
 echo "DISK="$DISK                                 						
 echo "RAM="$RAM                                   						
 echo "TIMELIMIT="$TIMELIMIT                       						
