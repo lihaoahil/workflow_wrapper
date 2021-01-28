@@ -184,6 +184,12 @@ do
 		echo "DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR 									>>$WORKFLOWNAME.cfg
 
 		echo "cfg at:" $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
+
+		# set up a log file to record workflow submission
+		rm -f workflow_$WORKFLOWNAME.log
+		echo "#This log file records output running gluex_MC.py."                           >>workflow_$WORKFLOWNAME.log
+
+
 	done # Done with this reaction mechanism
 	echo
 
@@ -233,7 +239,6 @@ do
 	do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
-		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
@@ -242,10 +247,10 @@ do
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
 			echo "FARM MODE: " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
-			gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
+			gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		elif [ "$MODE" == "test" ]; then     # test on farm
 			echo "TEST MODE: " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
-			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
+			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		else                                 # debug mode
 			echo "In farm mode will run:     " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
 			echo "In test mode will run:     " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
