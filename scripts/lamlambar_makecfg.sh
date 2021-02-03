@@ -123,7 +123,7 @@ do
 
 	RUN_RANGE=${RUN_LIST[idx]}
 	TESTRUN=${TESTRUN_LIST[idx]}
-	for mech_idx in `seq 0 2`;
+	for mech_idx in `seq 0 1`;
 	do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
@@ -235,7 +235,7 @@ do
 
 	RUN_RANGE=${RUN_LIST[idx]}
 	TESTRUN=${TESTRUN_LIST[idx]}
-	for mech_idx in `seq 0 2`;
+	for mech_idx in `seq 0 1`;
 	do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
