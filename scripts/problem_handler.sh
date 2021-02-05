@@ -55,6 +55,7 @@ do
 			if grep -q "cmu.edu" <<< "$LOC_HOSTNAME"; then
 				echo swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
 			elif grep -q "jlab.org" <<< "$LOC_HOSTNAME"; then
+				echo swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
 				swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
 			fi
 		done
