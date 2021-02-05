@@ -52,10 +52,10 @@ do
 		# handle problems
 		for problem_idx in `seq 0 $NUM_PROBLEMS`; #loop over types of problems
 		do
+			echo "    Problem type: "  ${PROBLEMS_LIST[problem_idx]}
 			if grep -q "cmu.edu" <<< "$LOC_HOSTNAME"; then
 				echo swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
 			elif grep -q "jlab.org" <<< "$LOC_HOSTNAME"; then
-				echo swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
 				swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
 			fi
 		done
