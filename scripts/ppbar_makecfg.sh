@@ -126,7 +126,7 @@ do
 	for mech_idx in `seq 0 2`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
 		
 		# Check if def exists
@@ -238,7 +238,7 @@ do
 	for mech_idx in `seq 0 2`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
