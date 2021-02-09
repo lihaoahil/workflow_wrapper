@@ -94,7 +94,7 @@ echo " -------------------------------------------------------------------------
 echo " Start configuration:"
 echo " --------------------------------------------------------------------------------------- "
 # JANA configs
-CUSTOM_PLUGINS=`printf "%s/scripts/reactions/jana_%s.config" "$WORKFLOWWRAPPER_PATH" "$REACTION" `
+CUSTOM_PLUGINS=`printf "%s/simulation/reactions/jana_%s.config" "$WORKFLOWWRAPPER_PATH" "$REACTION" `
 # Check if exists
 if [ ! -f "$CUSTOM_PLUGINS" ]; then
 	echo "Cannot find" $CUSTOM_PLUGINS"!"
@@ -130,7 +130,7 @@ do
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
 		
 		# Check if def exists
-		GENERATOR_CONFIG=`printf "%s/scripts/def/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
+		GENERATOR_CONFIG=`printf "%s/simulation/def/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		if [ ! -f "$GENERATOR_CONFIG" ]; then
 			echo "Cannot find" $GENERATOR_CONFIG"!"
 			exit

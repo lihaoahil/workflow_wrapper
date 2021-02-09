@@ -130,7 +130,7 @@ do
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
 		
 		# Check if def exists
-		GENERATOR_CONFIG=`printf "%s/scripts/def/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
+		GENERATOR_CONFIG=`printf "%s/simulation/def/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		if [ ! -f "$GENERATOR_CONFIG" ]; then
 			echo "Cannot find" $GENERATOR_CONFIG"!"
 			exit
