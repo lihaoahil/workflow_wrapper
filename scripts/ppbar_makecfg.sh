@@ -86,7 +86,7 @@ else
 	echo " Hostname not matched! Exit now."
 	exit
 fi
-OUTPUT_PATH=`printf "%s/%s_%s" "$OUTPUT" "$REACTION" "$TIME" `
+OUTPUT_PATH=`printf "%s/%s_%s_%s" "$OUTPUT" "$REACTION" "$TIME" "$MODE"`
 echo "OUTPUT_PATH: "$OUTPUT_PATH
 echo
 echo
