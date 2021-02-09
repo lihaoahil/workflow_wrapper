@@ -19,11 +19,11 @@
 # Path
 WORKFLOWWRAPPER_JLAB=/u/home/haoli/workflow/workflow_wrapper #https://github.com/lihaoahil/workflow_wrapper
 WORKFLOWWRAPPER_CMU=/home/haoli/test/workflow_wrapper
-OUTPUT_JLAB=/w/halld-scifs17exp/home/haoli/simulation/lamlambar_workflow_out    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
-OUTPUT_CMU=/raid4/haoli/test/lamlambar_workflow_out
+OUTPUT_JLAB=/w/halld-scifs17exp/home/haoli/simulation/workflow_out    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
+OUTPUT_CMU=/raid4/haoli/test/workflow_out
 
 # Simulation related
-REACTION=lamlambar
+REACTION=plambar
 RUN_LIST=('30274-31057' '40856-42559' '50685-51768' '51384-51457')  # Either single run number: 30730, or run range like 30796-30901 
 TRIGGER=1000000
 # test
@@ -46,7 +46,7 @@ GEANT_VERSION=4
 
 # Version, mech related lists
 PERIOD_LIST=('S17v3' 'S18v2' 'F18v2' 'F18lowEv2')
-MECH_LIST=('M8' 'M7a' 'M7b') 
+MECH_LIST=('M8' 'M7') 
 BKG_LIST=('recon-2017_01-ver03' 'recon-2018_01-ver02' 'recon-2018_08-ver02' 'recon-2018_08-ver02')
 ENV_LIST=('recon-2017_01-ver03_22.xml' 'recon-2018_01-ver02_14.xml' 'recon-2018_08-ver02_13.xml' 'recon-2018_08-ver02_13.xml')
 ANAENV_LIST=('analysis-2017_01-ver36.xml' 'analysis-2018_01-ver02.xml' 'analysis-2018_08-ver02.xml' 'analysis-2018_08-ver05.xml')
@@ -86,7 +86,7 @@ else
 	echo " Hostname not matched! Exit now."
 	exit
 fi
-OUTPUT_PATH=`printf "%s/%s_%s" "$OUTPUT" "$REACTION" "$TIME" `
+OUTPUT_PATH=`printf "%s/%s_%s_%s" "$OUTPUT" "$REACTION" "$TIME" "$MODE"`
 echo "OUTPUT_PATH: "$OUTPUT_PATH
 echo
 echo
@@ -123,10 +123,10 @@ do
 
 	RUN_RANGE=${RUN_LIST[idx]}
 	TESTRUN=${TESTRUN_LIST[idx]}
-	for mech_idx in `seq 0 2`;
+	for mech_idx in `seq 0 1`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
 		
 		# Check if def exists
@@ -235,10 +235,10 @@ do
 
 	RUN_RANGE=${RUN_LIST[idx]}
 	TESTRUN=${TESTRUN_LIST[idx]}
-	for mech_idx in `seq 0 2`;
+	for mech_idx in `seq 0 1`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
