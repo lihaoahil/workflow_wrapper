@@ -17,11 +17,12 @@
 LOC_HOSTNAME=`hostname`
 echo "HOST: "$LOC_HOSTNAME
 
-# Version, mech related lists
-PERIOD_LIST=('S17v3' 'S18v2' 'F18v2')  #'F18lowEv2'
+# Path 
+INPUT_PATH=/raid4/haoli/MCWrapper/ppbar_2021_01_28_07_30_PM
 
-# problems
-PROBLEMS_LIST=('SWIF-USER-NON-ZERO' 'AUGER-TIMEOUT')
+# Version, mech related lists
+PERIOD_LIST=('S17v3' 'S18v2' 'F18v2')  #'F18lowEv2'  
+
 
 # reaction
 REACTION=$1
@@ -49,16 +50,14 @@ do
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
 
 		NUM_PROBLEMS=$((${#PROBLEMS_LIST[@]}-1))
-		# handle problems
-		for problem_idx in `seq 0 $NUM_PROBLEMS`; #loop over types of problems
-		do
-			echo "    Problem type: "  ${PROBLEMS_LIST[problem_idx]}
-			if grep -q "cmu.edu" <<< "$LOC_HOSTNAME"; then
-				echo swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
-			elif grep -q "jlab.org" <<< "$LOC_HOSTNAME"; then
-				swif retry-jobs -workflow ${WORKFLOWNAME} -problems ${PROBLEMS_LIST[problem_idx]}
-			fi
-		done
+		
+		# hadd
+		echo hadd $INPUT_PATH/$WORKFLOWNAME/merged_tree.root $INPUT_PATH/$WORKFLOWNAME/root/trees/tree_*.root
+		hadd $INPUT_PATH/$WORKFLOWNAME/merged_tree.root $INPUT_PATH/$WORKFLOWNAME/root/trees/tree_*.root
+		echo
+		
+		echo hadd $INPUT_PATH/$WORKFLOWNAME/merged_thrown.root $INPUT_PATH/$WORKFLOWNAME/root/thrown/tree_thrown_*.root
+		hadd $INPUT_PATH/$WORKFLOWNAME/merged_thrown.root $INPUT_PATH/$WORKFLOWNAME/root/thrown/tree_thrown_*.root
 		echo
 
 	done # Done with this reaction mechanism
