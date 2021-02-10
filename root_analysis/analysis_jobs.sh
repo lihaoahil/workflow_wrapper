@@ -4,8 +4,8 @@
 #####################################################
 # AUTHOR: Hao Li                                    #
 # Date:   Jan/20/2021                               #
-# The scripts help run gluex_root_analysis jobs.     #
-#                                                   #
+# The scripts help run gluex_root_analysis jobs     #
+# over data, mc, gen.                               #
 #                                                   #
 #####################################################
 
@@ -60,6 +60,12 @@ fi
 ThrownTreeName=Thrown_Tree
 
 
+# real physics data
+DATA_LIST=('/raid4/haoli/RunPeriod-2017-01/analysis/ver36/merged/tree_antip__B4/pre_selected_CL5/trees/tree_antip__B4.root' '/raid4/haoli/RunPeriod-2018-01/analysis/ver02/tree_antip__B4/pre_selected_CL5/trees/tree_antip__B4.root' '/raid4/haoli/RunPeriod-2018-08/analysis/ver02/tree_antip__B4/pre_selected_CL5/trees/tree_antip__B4.root')
+
+
+
+
 # Loop over to make dselector and run the analysis
 NUM_PERIOD=$((${#PERIOD_LIST[@]}-1))
 for idx in `seq 0 $NUM_PERIOD`;  # loop over run periods
@@ -68,6 +74,10 @@ do
 	echo ${PERIOD_LIST[idx]}
 	echo " --------------------------------------- "
 
+	# Run over dataset in this run period 
+
+
+	#Run over mechanics
 	NUM_MECH=$((${#MECH_LIST[@]}-1))
 	for mech_idx in `seq 0 $NUM_MECH`;
 	do

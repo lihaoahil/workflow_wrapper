@@ -33,7 +33,7 @@ TESTTRIGGER=500
 # Farm related (do not change unless you know what you are doing)
 DISK=5GB           # Max Disk usage
 RAM=4GB            # Max RAM usage
-TIMELIMIT=4h       # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
+TIMELIMIT=6h       # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
 NCORES=1
 OS=centos77        # Specify CentOS65 machines
 BATCH_SYSTEM=swif
