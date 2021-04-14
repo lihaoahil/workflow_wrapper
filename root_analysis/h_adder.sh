@@ -18,21 +18,24 @@ LOC_HOSTNAME=`hostname`
 echo "HOST: "$LOC_HOSTNAME
 
 # Path 
-INPUT_PATH=/raid4/haoli/MCWrapper/ppbar_2021_01_28_07_30_PM
+INPUT_PATH=/raid4/haoli/MCWrapper/ppbar_2021_01_28_07_30_PM 
 
 # Version, mech related lists
-PERIOD_LIST=('S17v3' 'S18v2' 'F18v2')  #'F18lowEv2'  
+PERIOD_LIST=('S17v31' 'S18v21' 'F18v21' 'F18lowEv2')  #  
 
 
 # reaction
-REACTION=$1
+REACTION=ppbar
 echo "Reaction:" $REACTION
 if [ "$REACTION" == "ppbar" ]; then  # test case
 	MECH_LIST=('M6' 'M5a' 'M5b')
+	TAG=antip__B4
 elif [ "$REACTION" == "lamlambar" ]; then
 	MECH_LIST=('M6' 'M5') 
+	TAG=antilamblamb__B4
 elif [ "$REACTION" == "plambar" ]; then
-	MECH_LIST=('M8' 'M7a' 'M7b')   
+	MECH_LIST=('M8' 'M7') 
+	TAG=antilamblamb__B4  
 fi
 
 
@@ -46,16 +49,18 @@ do
 	for mech_idx in `seq 0 $NUM_MECH`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s%s_%s" "$REACTION" "${MECH_LIST[mech_idx]}" "${PERIOD_LIST[idx]}" `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}"  `  # WORKFLOW NAME
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
 
 		NUM_PROBLEMS=$((${#PROBLEMS_LIST[@]}-1))
 		
 		# hadd
-		echo hadd $INPUT_PATH/$WORKFLOWNAME/merged_tree.root $INPUT_PATH/$WORKFLOWNAME/root/trees/tree_*.root
-		hadd $INPUT_PATH/$WORKFLOWNAME/merged_tree.root $INPUT_PATH/$WORKFLOWNAME/root/trees/tree_*.root
+		rm $INPUT_PATH/$WORKFLOWNAME/merged_tree.root
+		echo hadd $INPUT_PATH/$WORKFLOWNAME/merged_tree.root $INPUT_PATH/$WORKFLOWNAME/root/trees/tree_${TAG}_mc_gen_*.root
+		hadd $INPUT_PATH/$WORKFLOWNAME/merged_tree.root $INPUT_PATH/$WORKFLOWNAME/root/trees/tree_${TAG}_mc_gen_*.root
 		echo
 		
+		rm $INPUT_PATH/$WORKFLOWNAME/merged_thrown.root
 		echo hadd $INPUT_PATH/$WORKFLOWNAME/merged_thrown.root $INPUT_PATH/$WORKFLOWNAME/root/thrown/tree_thrown_*.root
 		hadd $INPUT_PATH/$WORKFLOWNAME/merged_thrown.root $INPUT_PATH/$WORKFLOWNAME/root/thrown/tree_thrown_*.root
 		echo
@@ -64,15 +69,6 @@ do
 	echo
 
 done
-
-
-
-
-
-
-
-
-
 
 
 
