@@ -16,16 +16,18 @@
 
 # Version, mech related lists
 #PERIOD_LIST=('S17v3' 'S18v2' 'F18v2' 'F18lowEv2')  
-PERIOD_LIST=( 'F18lowEv2')  
+PERIOD_LIST=( 'F18v2' 'F18lowEv2')  
 
 # reaction related
 REACTION=$1
 echo "Reaction:" $REACTION
 if [ "$REACTION" == "ppbar" ]; then  # test case
 	TreeName=antip__B4_Tree
-	INPUT_PATH=('/raid4/haoli/RunPeriod-2017-01/analysis/ver36/merged/tree_antip__B4/pre_selected_CL5/trees' 
-				'/raid4/haoli/RunPeriod-2018-01/analysis/ver02/tree_antip__B4/pre_selected_CL5/trees' 
-				'/raid4/haoli/RunPeriod-2018-08/analysis/ver02/tree_antip__B4/pre_selected_CL5/trees' 
+	#INPUT_PATH=('/raid4/haoli/RunPeriod-2017-01/analysis/ver36/merged/tree_antip__B4/pre_selected_CL5/trees' 
+	#			'/raid4/haoli/RunPeriod-2018-01/analysis/ver02/tree_antip__B4/pre_selected_CL5/trees' 
+	#			'/raid4/haoli/RunPeriod-2018-08/analysis/ver02/tree_antip__B4/pre_selected_CL5/trees' 
+	#			'/raid4/haoli/RunPeriod-2018-08/analysis/ver05/merged/tree_antip__B4/pre_selected_CL5/trees')
+	INPUT_PATH=('/raid4/haoli/RunPeriod-2018-08/analysis/ver02/tree_antip__B4/pre_selected_CL5/trees' 
 				'/raid4/haoli/RunPeriod-2018-08/analysis/ver05/merged/tree_antip__B4/pre_selected_CL5/trees')
 elif [ "$REACTION" == "lamlambar" ]; then
  	TreeName=antilamblamb__B4_Tree
@@ -59,8 +61,10 @@ do
 		run_id=`echo $loc_data | cut -d_ -f10 | cut -c 1-6 `   ## magic number used! Attetion!
 		POLARIZATION_DIRECTION=`rcnd $run_id polarization_direction`
 		POLARIZATION_ANGLE=`rcnd $run_id polarization_angle`
+		EVENT_COUNT=`rcnd $run_id event_count`
+		EVENT_COUNT_IN_MILLION=$((EVENT_COUNT/1000000))
 		#echo -n "\""$run_id"\", "
-		echo $run_id $POLARIZATION_DIRECTION $POLARIZATION_ANGLE
+		echo $run_id $POLARIZATION_DIRECTION $POLARIZATION_ANGLE $EVENT_COUNT_IN_MILLION
 
 	done
 	echo
