@@ -23,7 +23,7 @@ echo "Reaction:" $REACTION
 if [ "$REACTION" == "ppbar" ]; then  # test case
 	MECH_LIST=('M6' 'M5a' 'M5b')
 	TreeName=antip__B4_Tree
-	INPUT_PATH=/raid4/haoli/MCWrapper/ppbar_2021_10_01_12_42_PM_ifarm #ppbar_2021_01_28_07_30_PM
+	INPUT_PATH=/raid4/haoli/MCWrapper/ppbar_2021_01_28_07_30_PM
 elif [ "$REACTION" == "lamlambar" ]; then
 	MECH_LIST=('M6' 'M5') 
 	TreeName=antilamblamb__B4_Tree
@@ -58,9 +58,6 @@ if [ "$QUEUE" == "green" ]; then
 elif [ "$QUEUE" == "red" ]; then
   CPUMEM=7960
   THREADS=8
-elif [ "$QUEUE" == "blue" ]; then
-	CPUMEM=7960
-	THREADS=16
 fi
 let MEM=$THREADS*$CPUMEM
 echo $MEM
@@ -73,8 +70,7 @@ RUN_SCRIPT=/home/haoli/test/workflow_wrapper/root_analysis/run_job.csh
 PERIOD_LIST=('S17v3' 'S18v2' 'F18v2')  
 #PERIOD_LIST=('F18lowEv2')  
 
-# WORKFLIW PREFIX
-WF=$5
+
 
 
 ##########################
@@ -104,7 +100,7 @@ do
 	else
 		# reaction related
 		if [ "$REACTION" == "ppbar" ]; then  # test case
-			ConfigPath=/home/haoli/test/Simulation_test/src/dselector/config/ppbar_dselector.config
+			ConfigPath=/home/haoli/test/Simulation_test/src/dselector/config/ppbar_jpsiMassCut.config
 		elif [ "$REACTION" == "lamlambar" ]; then
 			ConfigPath=/home/haoli/test/Simulation_test/src/dselector/config/lamlambar_dselector.config
 		elif [ "$REACTION" == "plambar" ]; then
@@ -120,7 +116,7 @@ do
 	do
 
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s_%s_%s%s" "$WF" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}"  `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}"  `  # WORKFLOW NAME
 		echo
 		echo
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
@@ -141,7 +137,7 @@ do
 		mkdir -p $OUTPUTDIR/log
 		cd $OUTPUTDIR
 		echo MakeDSelector $mc_data $TreeName $DSelectorName $ConfigPath
-		ConfigDSelector $mc_data $TreeName $DSelectorName $ConfigPath
+		MakeDSelector $mc_data $TreeName $DSelectorName $ConfigPath
 		if [ -f "$mc_data" ]; then
 			if [ ! -f "${OUTPUTDIR}/${OutPutName}" ]; then
 				echo "Input: " $mc_data
@@ -166,7 +162,7 @@ do
 		echo $JOBNAME
 		cd $OUTPUTDIR
 		echo MakeDSelector $gen_data $ThrownTreeName $DSelectorName $ConfigPath
-		ConfigDSelector $gen_data $ThrownTreeName $DSelectorName $ConfigPath
+		MakeDSelector $gen_data $ThrownTreeName $DSelectorName $ConfigPath
 		if [ -f "$gen_data" ]; then
 			if [ ! -f "${OUTPUTDIR}/${OutPutName}" ]; then
 				echo "Input: " $gen_data
