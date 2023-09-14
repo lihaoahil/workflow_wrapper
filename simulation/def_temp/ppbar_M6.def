@@ -7,6 +7,9 @@ Lines in this file before the "===" symbols are comments
   R.A. Schumacher, Carnegie Mellon Univ.   
   Recent updates:
    07-03-19   - much restructuring, adapting from earlier versions of this code
+   04-24-20   - added one more parameter to each line that specifies the decay
+                constants.  This parameter we are calling "b3" and is used to
+		help model S-wave scattering in baryon-anti-baryon production.
 
 c       Each particle must have an associated particle identification (ID) code.
 c       The very original version of this code was based on the LUND numerology.
@@ -14,7 +17,7 @@ c       However, this coding is totally unrelated to the GEANT (PDG) coding.
 c       Hence, this code effectively has its own particle ID suite.
 c       The user can make up new particle ID ad libitum in the definition files.
 c       The ordering of particles is somewhat haphazard, reflecting the history
-c       of how the code was developed.
+c       of how the code was developed. 
 c       
 c	Old "LUND" particle ID's 
 c	1	gamma
@@ -75,7 +78,7 @@ c
 END OF COMMENTS, START OF CONFIGURATION FOR RUNING MC_GEN 
 *******************************************************************************
 ===============================  <--- Next lines are active input, not comments
-Simulation of gamma + p --> p pbar p,   MECHANISM 5 <==  i = 1,2...,6
+Simulation of gamma + p --> p pbar p,   MECHANISM 6 <==  i = 1,2...,6
 TEMPTRIG	    	!Number of events to generate
 TEMPTRIG	        	!"Good" events to generate;  (stops at whichever number it hits first)
 TEMPMINGENE 		!Mininum momentum of incident particle beam in GeV/c
@@ -106,23 +109,55 @@ Second line (for each decay mode):
   Nbody(2-5)   "Dynamics"selection  Dyncode1 Dyncode2 
        		0=pure phase space (2 free parameters, specify decay dynamics)
 
-
 Third line (for each decay mode) LUND ID's for each of the decay products:
       ID1  	ID2 ...    	      Branching_fraction
 ******************************************************************************
 1	'PHOTON'	0.0	0.0	0	1.e32	1	0
 2	'PROTON'	0.93828	0.0	1	1.E32	41	0
 3	'dummy'		0.0	0.0	0	0.0	0.0	1
+! Proton-anti-proton, pseudo-BW particle intermediate state (Mechanism 1)
+!       proton  baryonium
+!	2	8 	0.425	0.93827	0.00	!use BW line shape
+!       proton  baryonium
+!	41	91		        1.00  	!proton - {baryonium}  "meson exchange"
+!	2	17 	0.20	0.93827	0.00    !
+!	92	-41		        1.00  	!{diproton} antiproton "baryon exchange"
+!	2	17 	0.20	0.93827	0.00    !
+!	91	41		        1.00 	!{baryonium} - proton  "baryon exchange"
 
-
-!d ouble-Regge model (Mechanism 5) specify b-slopes separately for top and bottom vertex
+! Double-Regge model (Mechanism 5) specify b-slope for top vertex and allow
+! the bottom vertex to decay also by a low-t mechanism
 !       3-body  doubleRegge
-!               b1(top)     b2(bottom)   b3(tcutoff)
-	3	 4      0.46  0.23  0.45        !0.40        0.14         0.49 
-!       proton  Proton  anti-Proton   !Proton goes forward
+!                       b1(top) b2(bot) b3(unused)
+!	3	 4      0.2	1.3     0.00     !3-body phase space, Mechanism 5, b1 slope, b2 slope
+!       proton	proton	anti-proton
+!	41	41	-41		1.00	
+
+! Regge + IM cluster model (Mechanism 6) specify b-slope for whole reaction and for pair clustering
+!       3-body  Regge + cluster
+!       b1 = Regge slope (GeV^-2); b2 = cluster parameter (GeV); b3 = t-cutoff between rise and fall (GeV)^2
+!                       b1(all)     b2(pair)     b3(tcutoff)
+	3	 5           PAR1      PAR2      PAR3              ! 0.37        0.21         0.11
+!       proton  proton  anti-proton   	!Proton goes forward (particle ordering matters)
 	41	41	-41		1.00
 
- 	
+! Regge + IM cluster model (Mechanism 7) specify b1-slope for whole reaction and "S-wave" model
+!       3-body  Regge + S-wave scattering
+!       b1 = Regge slope (GeV^-2); b2 = Scattering Length (fm); b3 = Effective Range (fm)
+!                       b1      b2      b3
+!	3	 6      0.20	0.60	0.60
+!       proton  Lambda  anti-Lambda   	!Proton goes forward (particle ordering matters)
+!	41	41	-41		1.00
+
+! Pure 3-body phase space
+!       proton  proton  anti-proton
+!	3	0	0.0	0.0	0.0	!3-body phase space
+!	41	41	-41		1.0
+
+! 3-body phase space followed by Regge-slope selection
+!       proton  proton  anti-proton
+!	3	 3      0.42	0.93827 0.0	!Slope parameter and recoil mass
+!	41	41	-41		1.00  	
 
 4	'PHOTON'	0.0	0.0	0	1.e32	1	0
 5	'NEUTRINO'	0.0	0.0	0	1.e32	2	0

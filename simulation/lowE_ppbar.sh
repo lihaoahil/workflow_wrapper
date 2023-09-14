@@ -17,24 +17,23 @@
 ##########################
 
 # Path
-MCWRAPPER_CENTRAL=/w/halld-scshelf2101/haoli/builds/test/gluex_MCwrapper
 WORKFLOWWRAPPER_JLAB=/u/home/haoli/workflow/workflow_wrapper #https://github.com/lihaoahil/workflow_wrapper
 WORKFLOWWRAPPER_CMU=/home/haoli/test/workflow_wrapper
-OUTPUT_JLAB=/w/halld-scshelf2101/home/haoli/simulation/workflow_out    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
+OUTPUT_JLAB=/w/halld-scifs17exp/home/haoli/simulation/workflow_out    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
 OUTPUT_CMU=/raid4/haoli/test/workflow_out
 
 # Simulation related
 REACTION=ppbar
 RUN_LIST=('30274-31057' '40856-42559' '50685-51768' '51384-51457')  # Either single run number: 30730, or run range like 30796-30901 
-TRIGGER=2000000
+TRIGGER=1000000
 # test
-TESTRUN_LIST=('31057' '42559' '50685' '51384')
-TESTTRIGGER=5000
+TESTRUN_LIST=('30730' '40856' '50685' '51384')
+TESTTRIGGER=500
 
 # Farm related (do not change unless you know what you are doing)
 DISK=5GB           # Max Disk usage
 RAM=4GB            # Max RAM usage
-TIMELIMIT=8h       # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
+TIMELIMIT=4h       # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
 NCORES=1
 OS=centos77        # Specify CentOS65 machines
 BATCH_SYSTEM=swif
@@ -48,8 +47,8 @@ GEANT_VERSION=4
 # Version, mech related lists
 PERIOD_LIST=('S17v3' 'S18v2' 'F18v2' 'F18lowEv2')
 MECH_LIST=('M6' 'M5a' 'M5b')
-BKG_LIST=('recon-2017_01-ver03.2' 'recon-2018_01-ver02.2' 'recon-2018_08-ver02.2' 'recon-2018_08-ver02.2')
-ENV_LIST=('recon-2017_01-ver03_27.xml' 'recon-2018_01-ver02_20.xml' 'recon-2018_08-ver02_19.xml' 'recon-2018_08-ver02_19.xml')
+BKG_LIST=('recon-2017_01-ver03' 'recon-2018_01-ver02' 'recon-2018_08-ver02' 'recon-2018_08-ver02')
+ENV_LIST=('recon-2017_01-ver03_22.xml' 'recon-2018_01-ver02_14.xml' 'recon-2018_08-ver02_13.xml' 'recon-2018_08-ver02_13.xml')
 ANAENV_LIST=('analysis-2017_01-ver36.xml' 'analysis-2018_01-ver02.xml' 'analysis-2018_08-ver02.xml' 'analysis-2018_08-ver05.xml')
 RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @status_approved' '@is_2018production and @status_approved and beam_current > 49' '@is_2018production and @status_approved and beam_current < 49') # Got from https://halldweb.jlab.org/wiki-private/index.php/GlueX_Phase-I_Dataset_Summary
 
@@ -61,7 +60,6 @@ RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @s
 
 # take input
 MODE=$1
-WF_TAG=$2
 echo     "##############"
 if [ "$MODE" == "ifarm" ]; then  # test case
 	echo "#  RUN MODE  #" 
@@ -104,7 +102,7 @@ if [ ! -f "$CUSTOM_PLUGINS" ]; then
 fi
 
 # Loops to set up
-for idx in `seq 0 2`;
+for idx in `seq 3 3`;
 do
 	ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ENV_LIST[idx]}" `
 	ANA_ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ANAENV_LIST[idx]}" `
@@ -128,7 +126,7 @@ do
 	for mech_idx in `seq 0 2`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s_%s_%s%s" "$WF_TAG" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
 		
 		# Check if def exists
@@ -142,11 +140,11 @@ do
 
 		# Determine the erergy according to run periods
 		if [ "$idx" != "3" ]; then
-			GEN_MIN_ENERGY=6.4
-			GEN_MAX_ENERGY=7.6
+			GEN_MIN_ENERGY=6.0
+			GEN_MAX_ENERGY=11.6
 		else
 			GEN_MIN_ENERGY=3.8
-			GEN_MAX_ENERGY=4.8
+			GEN_MAX_ENERGY=5.8
 		fi
 
 		# Determine track and trigger for different mode
@@ -225,7 +223,7 @@ echo
 echo
 echo " Run periods:"
 echo
-for idx in `seq 0 2`;
+for idx in `seq 3 3`;
 do
 	echo " --------------------------------------- "
 	echo ${PERIOD_LIST[idx]}
@@ -240,7 +238,7 @@ do
 	for mech_idx in `seq 0 2`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s_%s_%s%s" "$WF_TAG" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `
+		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
 
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
@@ -248,11 +246,11 @@ do
 
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
-			echo "FARM MODE: " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER cleanrecon=1 batch=2 
-			echo "$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log"
+			echo "FARM MODE: " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
+			gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		elif [ "$MODE" == "test" ]; then     # test on farm
-			echo "TEST MODE: " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2
-			$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			echo "TEST MODE: " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
+			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		else                                 # debug mode
 			echo "In farm mode will run:     " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
 			echo "In test mode will run:     " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2

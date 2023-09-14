@@ -34,9 +34,9 @@ TESTTRIGGER=5000
 # Farm related (do not change unless you know what you are doing)
 DISK=5GB           # Max Disk usage
 RAM=4GB            # Max RAM usage
-TIMELIMIT=8h       # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
+TIMELIMIT=4h       # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
 NCORES=1
-OS=centos77        # Specify CentOS65 machines
+OS=centos79        # Specify CentOS65 machines
 BATCH_SYSTEM=swif
 PROJECT=gluex 
 TRACK=simulation   # See here (https://scicomp.jlab.org/docs/batch_job_tracks)
@@ -49,12 +49,29 @@ GEANT_VERSION=4
 PERIOD_LIST=('S17v3' 'S18v2' 'F18v2' 'F18lowEv2')
 MECH_LIST=('M6' 'M5a' 'M5b')
 BKG_LIST=('recon-2017_01-ver03.2' 'recon-2018_01-ver02.2' 'recon-2018_08-ver02.2' 'recon-2018_08-ver02.2')
-ENV_LIST=('recon-2017_01-ver03_27.xml' 'recon-2018_01-ver02_20.xml' 'recon-2018_08-ver02_19.xml' 'recon-2018_08-ver02_19.xml')
+#ENV_LIST=('recon-2017_01-ver03_27.xml' 'recon-2018_01-ver02_20.xml' 'recon-2018_08-ver02_19.xml' 'recon-2018_08-ver02_19.xml')
+ENV_LIST=('recon-2017_01-ver03_21.xml' 'recon-2018_01-ver02_13.xml' 'recon-2018_08-ver02_13.xml' 'recon-2018_08-ver02_13.xml')
 ANAENV_LIST=('analysis-2017_01-ver36.xml' 'analysis-2018_01-ver02.xml' 'analysis-2018_08-ver02.xml' 'analysis-2018_08-ver05.xml')
 RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @status_approved' '@is_2018production and @status_approved and beam_current > 49' '@is_2018production and @status_approved and beam_current < 49') # Got from https://halldweb.jlab.org/wiki-private/index.php/GlueX_Phase-I_Dataset_Summary
+# Energy-dependent settings: 
+#   INDEX=  0     1     2     3     4     5     6
+EMIN_LIST=('3.8' '4.8' '6.4' '7.6' '8.2' '8.8' '10.0')
+EMAX_LIST=('4.8' '5.8' '7.6' '8.2' '8.8' '10.0' '11.4')
 
+PAR1_LIST=('0.24' '0.37' '0.36' '0.39' '0.41' '0.40' '0.41')
+PAR2_LIST=('0.24' '0.22' '0.23' '0.23' '0.24' '0.21' '0.22')
+PAR3_LIST=('0.03' '0.08' '0.08' '0.09' '0.10' '0.13' '0.13')
 
+PAR4_LIST=('0.49' '0.43' '0.46' '0.44' '0.44' '0.40' '0.42')
+PAR5_LIST=('0.02' '0.05' '0.23' '0.21' '0.21' '0.16' '0.12')
+PAR6_LIST=('0.15' '0.36' '0.45' '0.47' '0.50' '0.56' '0.57')
 
+PAR7_LIST=('0.88' '0.88' '0.81' '0.79' '0.90' '0.78' '0.79')
+PAR8_LIST=('1.70' '1.70' '1.63' '1.60' '1.57' '1.62' '1.58')
+PAR9_LIST=('0.65' '0.65' '0.60' '0.57' '0.52' '0.61' '0.60')
+
+CCDBSQLITEPATH=/group/halld/www/halldweb/html/dist/ccdb.sqlite
+RCDBSQLITEPATH=/group/halld/www/halldweb/html/dist/rcdb.sqlite
 ######################################################
 #      SETUP & CONFIGURATION    (Don't need edit)    #
 ######################################################
@@ -62,6 +79,8 @@ RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @s
 # take input
 MODE=$1
 WF_TAG=$2
+ENERGY_INDEX=$3 # 0,1 lowE; 2,3,4,5,6 highE
+
 echo     "##############"
 if [ "$MODE" == "ifarm" ]; then  # test case
 	echo "#  RUN MODE  #" 
@@ -71,6 +90,9 @@ else
 	echo "# DEBUG MODE #"
 fi
 echo "##############"
+echo
+echo "Energy range:" ${EMIN_LIST[ENERGY_INDEX]} "-" ${EMAX_LIST[ENERGY_INDEX]}
+echo "Parameters:" ${PAR1_LIST[ENERGY_INDEX]}, ${PAR2_LIST[ENERGY_INDEX]}, ${PAR3_LIST[ENERGY_INDEX]}, ${PAR4_LIST[ENERGY_INDEX]}, ${PAR5_LIST[ENERGY_INDEX]}, ${PAR6_LIST[ENERGY_INDEX]}, ${PAR7_LIST[ENERGY_INDEX]}, ${PAR8_LIST[ENERGY_INDEX]}, ${PAR9_LIST[ENERGY_INDEX]}
 echo
 TIME=$(date +"%Y_%m_%d_%I_%M_%p")
 echo "Current time:" $TIME
@@ -104,8 +126,16 @@ if [ ! -f "$CUSTOM_PLUGINS" ]; then
 fi
 
 # Loops to set up
-for idx in `seq 0 2`;
+for idx in `seq 0 3`;
 do
+	if [ "$ENERGY_INDEX" -gt 1 ] && [ "$idx" -eq 3 ]; then
+		continue
+	fi
+
+	if [ "$ENERGY_INDEX" -lt 2 ] && [ "$idx" -lt 3 ]; then
+                continue
+        fi
+
 	ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ENV_LIST[idx]}" `
 	ANA_ENVIRONMENT_FILE=`printf "/group/halld/www/halldweb/html/halld_versions/%s" "${ANAENV_LIST[idx]}" `
 	# Check if key files exist
@@ -132,22 +162,39 @@ do
 		DATA_OUTPUT_BASE_DIR=$OUTPUT_PATH/$WORKFLOWNAME
 		
 		# Check if def exists
-		GENERATOR_CONFIG=`printf "%s/simulation/def/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
-		if [ ! -f "$GENERATOR_CONFIG" ]; then
-			echo "Cannot find" $GENERATOR_CONFIG"!"
+		DEF_PATH=`printf "%s/simulation/def_temp/%s_%s.def" "$WORKFLOWWRAPPER_PATH" "$REACTION" "${MECH_LIST[mech_idx]}" `
+		if [ ! -f "$DEF_PATH" ]; then
+			echo "Cannot find" $DEF_PATH"!"
 			exit
 		fi
-
-
-
-		# Determine the erergy according to run periods
-		if [ "$idx" != "3" ]; then
-			GEN_MIN_ENERGY=6.4
-			GEN_MAX_ENERGY=7.6
+		# cp and edit the final version of definition files
+		mkdir -p $DATA_OUTPUT_BASE_DIR/defs
+		cd $DATA_OUTPUT_BASE_DIR/defs
+		GENERATOR_CONFIG=`printf "%s/defs/%s_%s.def" "$DATA_OUTPUT_BASE_DIR" "$REACTION" "${MECH_LIST[mech_idx]}" `
+		cp $DEF_PATH .
+		if [ "$mech_idx" -eq 0 ]; then
+			loc_PAR1=${PAR1_LIST[ENERGY_INDEX]}
+			loc_PAR2=${PAR2_LIST[ENERGY_INDEX]}
+			loc_PAR3=${PAR3_LIST[ENERGY_INDEX]}
+		elif [ "$mech_idx" -eq 1 ]; then
+                        loc_PAR1=${PAR4_LIST[ENERGY_INDEX]}
+                        loc_PAR2=${PAR5_LIST[ENERGY_INDEX]}
+                        loc_PAR3=${PAR6_LIST[ENERGY_INDEX]}
 		else
-			GEN_MIN_ENERGY=3.8
-			GEN_MAX_ENERGY=4.8
+                        loc_PAR1=${PAR7_LIST[ENERGY_INDEX]}
+                        loc_PAR2=${PAR8_LIST[ENERGY_INDEX]}
+                        loc_PAR3=${PAR9_LIST[ENERGY_INDEX]}
 		fi
+
+		#echo $loc_PAR1 $loc_PAR2 $loc_PAR3
+		echo def at: $GENERATOR_CONFIG
+		sed -i 's/PAR1/'$loc_PAR1'/' $GENERATOR_CONFIG
+		sed -i 's/PAR2/'$loc_PAR2'/' $GENERATOR_CONFIG
+		sed -i 's/PAR3/'$loc_PAR3'/' $GENERATOR_CONFIG
+	
+		# Determine the energy according to run periods
+		GEN_MIN_ENERGY=${EMIN_LIST[ENERGY_INDEX]}
+		GEN_MAX_ENERGY=${EMAX_LIST[ENERGY_INDEX]}
 
 		# Determine track and trigger for different mode
 		if [ "$MODE" != "ifarm" ]; then
@@ -159,7 +206,7 @@ do
 		cd $DATA_OUTPUT_BASE_DIR/mcwrapper_configs
 		rm -f $WORKFLOWNAME.cfg
 		
-		echo "#This config file was used to submit workflow: " $WORKFLOWNAME                >>$WORKFLOWNAME.cfg
+		echo "#This config file was used to submit workflow: " $WORKFLOWNAME                                                    >>$WORKFLOWNAME.cfg
 		echo ""                                           									>>$WORKFLOWNAME.cfg
 		echo "DISK="$DISK                                 									>>$WORKFLOWNAME.cfg
 		echo "RAM="$RAM                                   									>>$WORKFLOWNAME.cfg
@@ -172,15 +219,17 @@ do
 		echo ""                                           									>>$WORKFLOWNAME.cfg
 		echo "GENERATOR="$GENERATOR                       									>>$WORKFLOWNAME.cfg
 		echo "GEANT_VERSION="$GEANT_VERSION               									>>$WORKFLOWNAME.cfg
-		echo "CUSTOM_PLUGINS=file:"$CUSTOM_PLUGINS             								>>$WORKFLOWNAME.cfg
+		echo "CUSTOM_PLUGINS=file:"$CUSTOM_PLUGINS             							  	        >>$WORKFLOWNAME.cfg
 		echo ""                                           									>>$WORKFLOWNAME.cfg
-		echo "GENERATOR_CONFIG="$GENERATOR_CONFIG                                           >>$WORKFLOWNAME.cfg
+		echo "GENERATOR_CONFIG="$GENERATOR_CONFIG                                                                               >>$WORKFLOWNAME.cfg
 		echo "BKG=Random:"${BKG_LIST[idx]}                									>>$WORKFLOWNAME.cfg
 		echo "ENVIRONMENT_FILE="$ENVIRONMENT_FILE         									>>$WORKFLOWNAME.cfg
 		echo "ANA_ENVIRONMENT_FILE="$ANA_ENVIRONMENT_FILE 									>>$WORKFLOWNAME.cfg
+		#echo "CCDBSQLITEPATH="$CCDBSQLITEPATH                                                                                   >>$WORKFLOWNAME.cfg
+		#echo "RCDBSQLITEPATH="$RCDBSQLITEPATH                                                                                   >>$WORKFLOWNAME.cfg
 		echo "GEN_MIN_ENERGY="$GEN_MIN_ENERGY             									>>$WORKFLOWNAME.cfg
 		echo "GEN_MAX_ENERGY="$GEN_MAX_ENERGY             									>>$WORKFLOWNAME.cfg
-		echo "RCDB_QUERY="${RCDBQUERY_LIST[idx]}                							>>$WORKFLOWNAME.cfg
+		echo "RCDB_QUERY="${RCDBQUERY_LIST[idx]}                							        >>$WORKFLOWNAME.cfg
 		echo ""                                           									>>$WORKFLOWNAME.cfg
 		echo "WORKFLOW_NAME="$WORKFLOWNAME                 									>>$WORKFLOWNAME.cfg
 		echo "DATA_OUTPUT_BASE_DIR="$DATA_OUTPUT_BASE_DIR 									>>$WORKFLOWNAME.cfg
@@ -225,8 +274,16 @@ echo
 echo
 echo " Run periods:"
 echo
-for idx in `seq 0 2`;
+for idx in `seq 0 3`;
 do
+	if [ "$ENERGY_INDEX" -gt 1 ] && [ "$idx" -eq 3 ]; then
+                continue
+        fi
+
+        if [ "$ENERGY_INDEX" -lt 2 ] && [ "$idx" -lt 3 ]; then
+                continue
+        fi
+
 	echo " --------------------------------------- "
 	echo ${PERIOD_LIST[idx]}
 	echo "BKG=Random:"${BKG_LIST[idx]}
@@ -242,20 +299,19 @@ do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s_%s_%s%s" "$WF_TAG" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
-
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
 
 
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
-			echo "FARM MODE: " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER cleanrecon=1 batch=2 
-			echo "$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log"
+			echo "FARM MODE: " \$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER cleanrecon=1 batch=2 
+			$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		elif [ "$MODE" == "test" ]; then     # test on farm
-			echo "TEST MODE: " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2
+			echo "TEST MODE: " \$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2
 			$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		else                                 # debug mode
-			echo "In farm mode will run:     " gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER batch=2
-			echo "In test mode will run:     " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2
+			echo "In farm mode will run:     " \$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $RUN_RANGE $TRIGGER cleanrecon=1 batch=2 
+			echo "In test mode will run:     " \$MCWRAPPER_CENTRAL/gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2
 		fi
 		echo
 

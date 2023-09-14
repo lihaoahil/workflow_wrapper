@@ -118,7 +118,7 @@ Third line (for each decay mode) LUND ID's for each of the decay products:
 !d ouble-Regge model (Mechanism 5) specify b-slopes separately for top and bottom vertex
 !       3-body  doubleRegge
 !               b1(top)     b2(bottom)   b3(tcutoff)
-	3	 4      0.80        1.60         0.49 
+	3	 4       0.81   1.63   0.60              ! 0.80        1.60         0.49 
 !       proton  Proton  anti-Proton   !Proton goes forward
 	41	41	-41		1.00
 

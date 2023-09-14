@@ -18,7 +18,7 @@ LOC_HOSTNAME=`hostname`
 echo "HOST: "$LOC_HOSTNAME
 
 # Version, mech related lists
-PERIOD_LIST=('S17v3' 'S18v2' 'F18v2' 'F18lowEv2')  #
+PERIOD_LIST=('S17v3' 'S18v2' 'F18v2')  #
 
 # problems
 PROBLEMS_LIST=('SWIF-USER-NON-ZERO' 'AUGER-TIMEOUT' 'SWIF-SYSTEM-ERROR')
@@ -45,7 +45,7 @@ do
 	for mech_idx in `seq 0 $NUM_MECH`;
 	do
 		# Build path for the output
-		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
+		WORKFLOWNAME=`printf "E64_76_%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
 
 		NUM_PROBLEMS=$((${#PROBLEMS_LIST[@]}-1))

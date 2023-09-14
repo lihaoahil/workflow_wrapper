@@ -107,7 +107,7 @@ Second line (for each decay mode):
        		0=pure phase space (2 free parameters, specify decay dynamics)
 
 
-Third line (for each decay mode) LUND ID's for each of the decay products:
+Third line (for each decay mode) LUND IDs for each of the decay products:
       ID1  	ID2 ...    	      Branching_fraction
 ******************************************************************************
 1	'PHOTON'	0.0	0.0	0	1.e32	1	0
@@ -118,7 +118,7 @@ Third line (for each decay mode) LUND ID's for each of the decay products:
 !d ouble-Regge model (Mechanism 5) specify b-slopes separately for top and bottom vertex
 !       3-body  doubleRegge
 !               b1(top)     b2(bottom)   b3(tcutoff)
-	3	 4      0.46  0.23  0.45        !0.40        0.14         0.49 
+	3	 4         PAR1      PAR2      PAR3               ! 0.80        1.60         0.49 
 !       proton  Proton  anti-Proton   !Proton goes forward
 	41	41	-41		1.00
 
