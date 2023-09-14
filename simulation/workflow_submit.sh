@@ -2,12 +2,10 @@
 
  
 #####################################################
-# AUTHOR: Hao Li                                    #
-# Date:   Jan/20/2021                               #
-# The scripts helps automate simulation of the      #
-# three reaction mechanisms in ppbar channel and    #
-# five reaction mechanisms in lamlambar channel     #
-# for all run periods                               #
+# AUTHOR: Hao Li                                    
+# Date:   Sep/14/2023                               
+# The scripts helps automate simulation of different
+# reactions & mechanisms in jlab ifarm swif2        
 #####################################################
 
 
@@ -260,14 +258,14 @@ do
 
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
-			echo "FARM MODE: " gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2
-			gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			echo "FARM MODE:  gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2"
+			gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		elif [ "$MODE" == "test" ]; then     # test on farm
-			echo "TEST MODE: " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2
-			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			echo "TEST MODE:  gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2"
+			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		else                                 # debug mode
-			echo "In farm mode will run:     " gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2
-			echo "In test mode will run:     " gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2
+			echo "In farm mode will run:      gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2"
+			echo "In test mode will run:      gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2"
 		fi
 		echo
 
