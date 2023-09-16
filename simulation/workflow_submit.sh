@@ -20,7 +20,7 @@ WORKFLOWWRAPPER_CMU=/home/haoli/test/workflow_wrapper
 OUTPUT_JLAB=/lustre19/expphy/cache/halld/home/haoli/gluex_simulations    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
 OUTPUT_CMU=/raid4/haoli/test/workflow_out
 
-LOGDIR=/u/scifarm/farm_out/haoli/gluex_simulations
+LOGDIR_JLAB=/u/scifarm/farm_out/haoli/gluex_simulations
 
 # RUNS Simulation related
 RUN_LIST=('30274-31057' '40856-42559' '50685-51768' '51384-51457' '71350-73266')  # Either single run number: 30730, or run range like 30796-30901 
@@ -101,6 +101,7 @@ else
 	exit
 fi
 OUTPUT_PATH=`printf "%s/%s_%s_%s" "$OUTPUT" "$REACTION" "$TIME" "$MODE"`
+LOG_PATH=`printf "%s/%s_%s_%s" "$LOGDIR_JLAB" "$REACTION" "$TIME" "$MODE"`
 echo "OUTPUT_PATH: "$OUTPUT_PATH
 echo
 echo
@@ -263,7 +264,8 @@ do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
-		LOG_OUTPUT_DIR=${LOGDIR}/${OUTPUT_PATH}/${WORKFLOWNAME}
+		LOG_OUTPUT_DIR=${LOG_PATH}/${WORKFLOWNAME}
+		echo "Log path set to: " $LOG_OUTPUT_DIR
 		mkdir -p ${LOG_OUTPUT_DIR}
 
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
