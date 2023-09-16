@@ -263,21 +263,22 @@ do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
-		mkdir -p ${LOGDIR}/$WORKFLOWNAME
+		LOG_OUTPUT_DIR=${LOGDIR}/${OUTPUT_PATH}/${WORKFLOWNAME}
+		mkdir -p ${LOG_OUTPUT_DIR}
 
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
 
 
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
-			echo "FARM MODE:  gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
-			gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			echo "FARM MODE:  gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
+			gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR} |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		elif [ "$MODE" == "test" ]; then     # test on farm
-			echo "TEST MODE:  gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
-			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			echo "TEST MODE:  gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
+			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR} |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		else                                 # debug mode
-			echo "In farm mode will run:      gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
-			echo "In test mode will run:      gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
+			echo "In farm mode will run:      gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
+			echo "In test mode will run:      gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
 		fi
 		echo
 
