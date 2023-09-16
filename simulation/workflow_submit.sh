@@ -61,6 +61,22 @@ RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @s
 #      SETUP & CONFIGURATION    (Don't need edit)    #
 ######################################################
 
+# check the MCWrapper path
+if [ -n "$MCWRAPPER_CENTRAL" ]; then
+    echo "MCWRAPPER_CENTRAL is set to: $MCWRAPPER_CENTRAL"
+else
+    echo "MCWRAPPER_CENTRAL is not set. Please set it and run the script again."
+    exit 1
+fi
+
+# Ask the user to confirm
+read -p "Is this the correct value? (y/n): " confirm
+
+if [ "$confirm" != "y" ]; then
+    echo "Aborting script."
+    exit 1
+fi
+
 # Reaction Related
 REACTION=$1
 echo "Reaction:" $REACTION
@@ -70,6 +86,9 @@ elif [ "$REACTION" == "lamlambar" ]; then
 	MECH_LIST=('M6' 'M5') 
 elif [ "$REACTION" == "plambar" ]; then
 	MECH_LIST=('M8' 'M7')   
+else
+	echo "no reaction is entered, aborting script."
+	exit 1
 fi
 
 # Mode
@@ -274,10 +293,10 @@ do
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
 			echo "FARM MODE:  gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
-			gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR} |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			${MCWRAPPER_CENTRAL}/gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR} |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		elif [ "$MODE" == "test" ]; then     # test on farm
 			echo "TEST MODE:  gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
-			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR} |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			${MCWRAPPER_CENTRAL}/gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR} |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		else                                 # debug mode
 			echo "In farm mode will run:      gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
 			echo "In test mode will run:      gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOG_OUTPUT_DIR}"
