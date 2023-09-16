@@ -20,8 +20,9 @@ WORKFLOWWRAPPER_CMU=/home/haoli/test/workflow_wrapper
 OUTPUT_JLAB=/lustre19/expphy/cache/halld/home/haoli/gluex_simulations    # See here for work/cache/volatile usages: https://scicomp.jlab.org/scicomp/index.html#/work
 OUTPUT_CMU=/raid4/haoli/test/workflow_out
 
-# Simulation related
+LOGDIR=/u/scifarm/farm_out/haoli/gluex_simulations
 
+# RUNS Simulation related
 RUN_LIST=('30274-31057' '40856-42559' '50685-51768' '51384-51457' '71350-73266')  # Either single run number: 30730, or run range like 30796-30901 
 TRIGGER=(10000000 10000000 10000000 1000000 10000000)
 # test
@@ -31,7 +32,7 @@ TESTTRIGGER=500
 # Farm related (do not change unless you know what you are doing)
 DISK=5GB           			# Max Disk usage
 RAM=5GB            			# Max RAM usage
-TIMELIMIT=180minutes        # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
+TIMELIMIT=300minutes        # Max walltime (job 'ppbar 10000 evts w/ 1 core' runs roughly 1.5 hours)
 NCORES=1
 OS=general        # Specify CentOS65 machines
 BATCH_SYSTEM=swif2
@@ -54,17 +55,25 @@ RCDBQUERY_LIST=('@is_production and @status_approved' '@is_2018production and @s
 # and      https://halldweb.jlab.org/wiki-private/index.php/GlueX_Phase-II_Dataset_Summary
 
 
-# Reaction Related
-REACTION=ppbar
-MECH_LIST=('M6' 'M5a' 'M5b')
 
 
 ######################################################
 #      SETUP & CONFIGURATION    (Don't need edit)    #
 ######################################################
 
-# take input
-MODE=$1
+# Reaction Related
+REACTION=$1
+echo "Reaction:" $REACTION
+if [ "$REACTION" == "ppbar" ]; then  # test case
+	MECH_LIST=('M6' 'M5a' 'M5b')
+elif [ "$REACTION" == "lamlambar" ]; then
+	MECH_LIST=('M6' 'M5') 
+elif [ "$REACTION" == "plambar" ]; then
+	MECH_LIST=('M8' 'M7')   
+fi
+
+# Mode
+MODE=$2
 echo     "##############"
 if [ "$MODE" == "ifarm" ]; then  # test case
 	echo "#  RUN MODE  #" 
@@ -130,7 +139,8 @@ do
 	TESTRUN=${TESTRUN_LIST[idx]}
 
 	# loop over reaction mechanisms
-	for mech_idx in `seq 0 2`;
+	NUM_MECH=$((${#MECH_LIST[@]}-1))
+	for mech_idx in `seq 0 $NUM_MECH`;
 	do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `  # WORKFLOW NAME
@@ -247,25 +257,27 @@ do
 	TESTRUN=${TESTRUN_LIST[idx]}
 
 	# loop over reaction mechanisms
-	for mech_idx in `seq 0 2`;
+	NUM_MECH=$((${#MECH_LIST[@]}-1))
+	for mech_idx in `seq 0 $NUM_MECH`;
 	do
 		# Build path for the output
 		WORKFLOWNAME=`printf "%s_%s%s" "${PERIOD_LIST[idx]}" "$REACTION" "${MECH_LIST[mech_idx]}" `
 		cfgPATH=$OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/$WORKFLOWNAME.cfg
+		mkdir -p ${LOGDIR}/$WORKFLOWNAME
 
 		echo "Mech="${MECH_LIST[mech_idx]}", workflow="$WORKFLOWNAME
 
 
 		# Workflow submission
 		if [ "$MODE" == "ifarm" ]; then      # real submission to farm
-			echo "FARM MODE:  gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2"
-			gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			echo "FARM MODE:  gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
+			gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		elif [ "$MODE" == "test" ]; then     # test on farm
-			echo "TEST MODE:  gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2"
-			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
+			echo "TEST MODE:  gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
+			gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME |& tee -a $OUTPUT_PATH/$WORKFLOWNAME/mcwrapper_configs/workflow_$WORKFLOWNAME.log
 		else                                 # debug mode
-			echo "In farm mode will run:      gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2"
-			echo "In test mode will run:      gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2"
+			echo "In farm mode will run:      gluex_MC.py $cfgPATH $RUN_RANGE ${TRIGGER[idx]} cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
+			echo "In test mode will run:      gluex_MC.py $cfgPATH $TESTRUN $TESTTRIGGER cleanrecon=1 batch=2 logdir=${LOGDIR}/$WORKFLOWNAME"
 		fi
 		echo
 
